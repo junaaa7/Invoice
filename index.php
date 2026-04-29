@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Invoice Pembiayaan</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #e0e0e0; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+        h2 { color: #2c3e50; border-left: 5px solid #e74c3c; padding-left: 15px; margin-top: 0; }
+        hr { margin: 20px 0; border: 1px solid #ddd; }
+        .form-row { display: flex; margin-bottom: 12px; flex-wrap: wrap; }
+        .form-row label { width: 180px; font-weight: bold; padding-top: 8px; }
+        .form-row input, .form-row select, .form-row textarea { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+        .form-row textarea { width: 100%; }
+        .sub-header { background: #f8f9fa; padding: 10px; margin: 15px 0; font-weight: bold; border-left: 4px solid #e74c3c; }
+        button { background: #27ae60; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 15px; }
+        button:hover { background: #219a52; }
+        .note { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>📋 FORM INVOICE PEMBIAYAAN</h2>
+    <form action="invoice.php" method="POST">
+
+        <!-- Header Koperasi -->
+        <div class="sub-header">🏢 DATA KOPERASI / KREDITUR</div>
+        <div class="form-row">
+            <label>Nama Koperasi:</label>
+            <input type="text" name="koperasi_nama" value="KOPERASI / JASA KEUANGAN MITRA" required>
+        </div>
+        <div class="form-row">
+            <label>Alamat Koperasi:</label>
+            <input type="text" name="koperasi_alamat" value="Jl. Jenderal Sudirman No. 45, Jakarta Selatan" required>
+        </div>
+        <div class="form-row">
+            <label>WhatsApp / Telp:</label>
+            <input type="text" name="koperasi_kontak" value="WhatsApp: 0812-XXXX-XXXX | Telp: (021) 123456">
+        </div>
+
+        <hr>
+
+        <!-- Data Debitur -->
+        <div class="sub-header">👤 DATA DEBITUR / PENERIMA DANA</div>
+        <div class="form-row">
+            <label>Nama Lengkap:</label>
+            <input type="text" name="debitur_nama" placeholder="Sesuai KTP" required>
+        </div>
+        <div class="form-row">
+            <label>NIK:</label>
+            <input type="text" name="debitur_nik" placeholder="3271XXXXXXXXX" required>
+        </div>
+        <div class="form-row">
+            <label>Alamat Lengkap:</label>
+            <textarea name="debitur_alamat" rows="2" placeholder="Jl. ... RT/RW ... Kelurahan ..."></textarea>
+        </div>
+
+        <hr>
+
+        <!-- Info Invoice -->
+        <div class="form-row">
+            <label>No. Invoice:</label>
+            <input type="text" name="invoice_no" value="INV/BPKB/<?= date('Y/m/d') ?>" required>
+        </div>
+        <div class="form-row">
+            <label>Tanggal:</label>
+            <input type="date" name="tanggal" value="<?= date('Y-m-d') ?>" required>
+        </div>
+        <div class="form-row">
+            <label>Status:</label>
+            <select name="status">
+                <option value="DICAIRKAN">DICAIRKAN</option>
+                <option value="PROSES">PROSES</option>
+                <option value="DITOLAK">DITOLAK</option>
+            </select>
+        </div>
+
+        <hr>
+
+        <!-- Data BPKB Jaminan -->
+        <div class="sub-header">🚗 DATA JAMINAN BPKB</div>
+        <div class="form-row">
+            <label>Merk / Tipe:</label>
+            <input type="text" name="bpkb_merk" placeholder="Contoh: TOYOTA AVANZA VELOZ" required>
+        </div>
+        <div class="form-row">
+            <label>Tahun:</label>
+            <input type="text" name="bpkb_tahun" placeholder="2021">
+        </div>
+        <div class="form-row">
+            <label>No. Polisi:</label>
+            <input type="text" name="bpkb_polisi" placeholder="B 1234 XYZ">
+        </div>
+        <div class="form-row">
+            <label>Warna:</label>
+            <input type="text" name="bpkb_warna" placeholder="HITAM METALIK">
+        </div>
+        <div class="form-row">
+            <label>No. BPKB:</label>
+            <input type="text" name="bpkb_no" placeholder="M-XXXXXXXXX">
+        </div>
+        <div class="form-row">
+            <label>No. Rangka:</label>
+            <input type="text" name="bpkb_rangka" placeholder="MHXXXXXXXXXXXXXX">
+        </div>
+
+        <hr>
+
+        <!-- Rincian Dana -->
+        <div class="sub-header">💰 RINCIAN DANA (DISBURSEMENT)</div>
+        <div class="form-row">
+            <label>Plafond Pinjaman Pokok:</label>
+            <input type="number" name="plafond" step="1000" value="50000000" required>
+        </div>
+        <div class="form-row">
+            <label>Biaya Administrasi & Notaris:</label>
+            <input type="number" name="biaya_adm" step="1000" value="1500000">
+        </div>
+        <div class="form-row">
+            <label>Premi Asuransi Kendaraan:</label>
+            <input type="number" name="biaya_asuransi" step="1000" value="500000">
+        </div>
+        <div class="form-row">
+            <label>Biaya Provisi:</label>
+            <input type="number" name="biaya_provisi" step="1000" value="1000000">
+        </div>
+
+        <hr>
+
+        <!-- Kewajiban Pembayaran -->
+        <div class="sub-header">📅 KEWAJIBAN PEMBAYARAN</div>
+        <div class="form-row">
+            <label>Angsuran Per Bulan (Rp):</label>
+            <input type="number" name="angsuran" step="1000" value="1850000" required>
+        </div>
+        <div class="form-row">
+            <label>Tenor (Bulan):</label>
+            <input type="number" name="tenor" value="36" required>
+        </div>
+        <div class="form-row">
+            <label>Jatuh Tempo (Tanggal tiap bulan):</label>
+            <input type="number" name="jatuh_tempo_tanggal" value="29" min="1" max="31">
+        </div>
+        <div class="form-row">
+            <label>Mulai Cicilan (Bulan/Tahun):</label>
+            <input type="month" name="mulai_cicilan" value="<?= date('Y-m') ?>">
+        </div>
+
+        <hr>
+
+        <!-- Tanda Tangan -->
+        <div class="form-row">
+            <label>Nama Petugas Keuangan:</label>
+            <input type="text" name="petugas" placeholder="Nama petugas">
+        </div>
+
+        <button type="submit">📄 GENERATE INVOICE</button>
+    </form>
+</div>
+</body>
+</html>
