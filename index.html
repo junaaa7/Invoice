@@ -2,183 +2,669 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Form Invoice Pembiayaan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Pembiayaan - BPKB</title>
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #e0e0e0; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
-        h2 { color: #2c3e50; border-left: 5px solid #e74c3c; padding-left: 15px; margin-top: 0; }
-        hr { margin: 20px 0; border: 1px solid #ddd; }
+        .container { max-width: 1400px; margin: auto; }
+        
+        /* Card Style */
+        .card { background: white; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); margin-bottom: 20px; overflow: hidden; }
+        .card-header { background: #2c3e50; color: white; padding: 15px 20px; font-size: 18px; font-weight: bold; }
+        .card-body { padding: 20px; }
+        
+        /* Form Style */
         .form-row { display: flex; margin-bottom: 12px; flex-wrap: wrap; }
-        .form-row label { width: 180px; font-weight: bold; padding-top: 8px; }
+        .form-row label { width: 200px; font-weight: bold; padding-top: 8px; }
         .form-row input, .form-row select, .form-row textarea { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
         .form-row textarea { width: 100%; }
         .sub-header { background: #f8f9fa; padding: 10px; margin: 15px 0; font-weight: bold; border-left: 4px solid #e74c3c; }
-        button { background: #27ae60; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 15px; }
+        button { background: #27ae60; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
         button:hover { background: #219a52; }
-        .note { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
-    </style>
-    <script>
-        // Fungsi untuk mengisi tanggal dan no invoice otomatis dengan JavaScript
-        function setDefaultValues() {
-            // Set tanggal hari ini
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const todayDate = `${year}-${month}-${day}`;
-            document.getElementById('tanggal').value = todayDate;
-            
-            // Set bulan untuk mulai cicilan (YYYY-MM)
-            const thisMonth = `${year}-${month}`;
-            document.getElementById('mulai_cicilan').value = thisMonth;
-            
-            // Set no invoice otomatis
-            document.getElementById('invoice_no').value = `INV/BPKB/${year}/${month}/${day}`;
+        .btn-danger { background: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-warning { background: #f39c12; }
+        .btn-info { background: #3498db; }
+        
+        /* Table Style */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #34495e; color: white; }
+        tr:hover { background: #f5f5f5; }
+        .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .status-dicairkan { background: #27ae60; color: white; }
+        .status-proses { background: #f39c12; color: white; }
+        .status-ditolak { background: #e74c3c; color: white; }
+        .status-lunas { background: #3498db; color: white; }
+        .btn-table { padding: 5px 10px; text-decoration: none; border-radius: 3px; font-size: 12px; margin: 2px; display: inline-block; cursor: pointer; border: none; }
+        .btn-table.view { background: #3498db; color: white; }
+        .btn-table.edit { background: #f39c12; color: white; }
+        .btn-table.delete { background: #e74c3c; color: white; }
+        .btn-table.print { background: #2c3e50; color: white; }
+        
+        .alert { padding: 12px; border-radius: 5px; margin-bottom: 15px; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        
+        .two-columns { display: flex; gap: 20px; }
+        .column { flex: 1; }
+        
+        /* Modal untuk preview invoice */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 30px auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 1000px;
+            border-radius: 10px;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
         }
         
-        // Jalankan saat halaman selesai loading
-        window.onload = setDefaultValues;
-    </script>
+        @media (max-width: 768px) {
+            .two-columns { flex-direction: column; }
+            .form-row label { width: 100%; margin-bottom: 5px; }
+        }
+        
+        @media print {
+            body { background: white; padding: 0; }
+            .no-print { display: none; }
+            .modal-content { margin: 0; padding: 0; width: 100%; }
+            .close-modal { display: none; }
+        }
+    </style>
 </head>
 <body>
 <div class="container">
-    <h2>📋 FORM INVOICE PEMBIAYAAN</h2>
-    <form action="invoice.php" method="POST">
+    <div id="alertContainer"></div>
 
-        <!-- Header Koperasi -->
-        <div class="sub-header">🏢 DATA KOPERASI / KREDITUR</div>
-        <div class="form-row">
-            <label>Nama Koperasi:</label>
-            <input type="text" name="koperasi_nama" value="KOPERASI / JASA KEUANGAN MITRA" required>
-        </div>
-        <div class="form-row">
-            <label>Alamat Koperasi:</label>
-            <input type="text" name="koperasi_alamat" value="Jl. Jenderal Sudirman No. 45, Jakarta Selatan" required>
-        </div>
-        <div class="form-row">
-            <label>WhatsApp / Telp:</label>
-            <input type="text" name="koperasi_kontak" value="WhatsApp: 0812-XXXX-XXXX | Telp: (021) 123456">
+    <div class="two-columns">
+        <!-- KOLOM KIRI: FORM INPUT -->
+        <div class="column">
+            <div class="card">
+                <div class="card-header" id="formTitle">📋 FORM INVOICE PEMBIAYAAN</div>
+                <div class="card-body">
+                    <form id="invoiceForm">
+                        <input type="hidden" id="editId" value="">
+                        
+                        <div class="sub-header">🏢 DATA KOPERASI / KREDITUR</div>
+                        <div class="form-row">
+                            <label>Nama Koperasi:</label>
+                            <input type="text" id="koperasi_nama" value="KOPERASI / JASA KEUANGAN MITRA" required>
+                        </div>
+                        <div class="form-row">
+                            <label>Alamat Koperasi:</label>
+                            <input type="text" id="koperasi_alamat" value="Jl. Jenderal Sudirman No. 45, Jakarta Selatan">
+                        </div>
+                        <div class="form-row">
+                            <label>WhatsApp / Telp:</label>
+                            <input type="text" id="koperasi_kontak" value="WhatsApp: 0812-XXXX-XXXX | Telp: (021) 123456">
+                        </div>
+
+                        <div class="sub-header">👤 DATA DEBITUR / PENERIMA DANA</div>
+                        <div class="form-row">
+                            <label>Nama Lengkap:</label>
+                            <input type="text" id="debitur_nama" placeholder="Sesuai KTP" required>
+                        </div>
+                        <div class="form-row">
+                            <label>NIK:</label>
+                            <input type="text" id="debitur_nik" placeholder="3271XXXXXXXXX">
+                        </div>
+                        <div class="form-row">
+                            <label>Alamat Lengkap:</label>
+                            <textarea id="debitur_alamat" rows="2" placeholder="Jl. ... RT/RW ... Kelurahan ..."></textarea>
+                        </div>
+
+                        <div class="sub-header">📄 INFORMASI INVOICE</div>
+                        <div class="form-row">
+                            <label>No. Invoice:</label>
+                            <input type="text" id="invoice_no" required>
+                        </div>
+                        <div class="form-row">
+                            <label>Tanggal:</label>
+                            <input type="date" id="tanggal" required>
+                        </div>
+                        <div class="form-row">
+                            <label>Status:</label>
+                            <select id="status">
+                                <option value="DICAIRKAN">DICAIRKAN</option>
+                                <option value="PROSES">PROSES</option>
+                                <option value="DITOLAK">DITOLAK</option>
+                                <option value="LUNAS">LUNAS</option>
+                            </select>
+                        </div>
+
+                        <div class="sub-header">🚗 DATA JAMINAN BPKB</div>
+                        <div class="form-row">
+                            <label>Merk / Tipe:</label>
+                            <input type="text" id="bpkb_merk" placeholder="TOYOTA AVANZA VELOZ">
+                        </div>
+                        <div class="form-row">
+                            <label>Tahun:</label>
+                            <input type="text" id="bpkb_tahun" placeholder="2021">
+                        </div>
+                        <div class="form-row">
+                            <label>No. Polisi:</label>
+                            <input type="text" id="bpkb_polisi" placeholder="B 1234 XYZ">
+                        </div>
+                        <div class="form-row">
+                            <label>Warna:</label>
+                            <input type="text" id="bpkb_warna" placeholder="HITAM METALIK">
+                        </div>
+                        <div class="form-row">
+                            <label>No. BPKB:</label>
+                            <input type="text" id="bpkb_no" placeholder="M-XXXXXXXXX">
+                        </div>
+                        <div class="form-row">
+                            <label>No. Rangka:</label>
+                            <input type="text" id="bpkb_rangka" placeholder="MHXXXXXXXXXXXXXX">
+                        </div>
+
+                        <div class="sub-header">💰 RINCIAN DANA (DISBURSEMENT)</div>
+                        <div class="form-row">
+                            <label>Plafond Pinjaman Pokok (Rp):</label>
+                            <input type="number" id="plafond" value="50000000" required>
+                        </div>
+                        <div class="form-row">
+                            <label>Biaya Administrasi & Notaris (Rp):</label>
+                            <input type="number" id="biaya_adm" value="1500000">
+                        </div>
+                        <div class="form-row">
+                            <label>Premi Asuransi Kendaraan (Rp):</label>
+                            <input type="number" id="biaya_asuransi" value="500000">
+                        </div>
+                        <div class="form-row">
+                            <label>Biaya Provisi (Rp):</label>
+                            <input type="number" id="biaya_provisi" value="1000000">
+                        </div>
+
+                        <div class="sub-header">📅 KEWAJIBAN PEMBAYARAN</div>
+                        <div class="form-row">
+                            <label>Angsuran Per Bulan (Rp):</label>
+                            <input type="number" id="angsuran" value="1850000" required>
+                        </div>
+                        <div class="form-row">
+                            <label>Tenor (Bulan):</label>
+                            <input type="number" id="tenor" value="36" required>
+                        </div>
+                        <div class="form-row">
+                            <label>Jatuh Tempo (Tanggal tiap bulan):</label>
+                            <input type="number" id="jatuh_tempo_tanggal" value="29" min="1" max="31">
+                        </div>
+                        <div class="form-row">
+                            <label>Mulai Cicilan (Bulan/Tahun):</label>
+                            <input type="month" id="mulai_cicilan">
+                        </div>
+
+                        <div class="form-row">
+                            <label>Nama Petugas Keuangan:</label>
+                            <input type="text" id="petugas" placeholder="Nama petugas">
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <button type="button" id="saveBtn">📄 SIMPAN INVOICE</button>
+                            <button type="button" id="cancelBtn" style="background:#7f8c8d; display:none;">↩️ BATAL EDIT</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
-        <hr>
-
-        <!-- Data Debitur -->
-        <div class="sub-header">👤 DATA DEBITUR / PENERIMA DANA</div>
-        <div class="form-row">
-            <label>Nama Lengkap:</label>
-            <input type="text" name="debitur_nama" placeholder="Sesuai KTP" required>
+        <!-- KOLOM KANAN: DAFTAR INVOICE -->
+        <div class="column">
+            <div class="card">
+                <div class="card-header">
+                    📋 DAFTAR INVOICE PEMBIAYAAN
+                    <span id="totalInvoice" style="float: right; font-size: 14px;"></span>
+                </div>
+                <div class="card-body" style="overflow-x: auto;">
+                    <div id="invoiceList">
+                        <p style="text-align: center; color: #7f8c8d; padding: 40px;">Belum ada invoice. Silakan buat invoice baru di form sebelah kiri.</p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="form-row">
-            <label>NIK:</label>
-            <input type="text" name="debitur_nik" placeholder="3271XXXXXXXXX" required>
-        </div>
-        <div class="form-row">
-            <label>Alamat Lengkap:</label>
-            <textarea name="debitur_alamat" rows="2" placeholder="Jl. ... RT/RW ... Kelurahan ..."></textarea>
-        </div>
-
-        <hr>
-
-        <!-- Info Invoice -->
-        <div class="form-row">
-            <label>No. Invoice:</label>
-            <input type="text" id="invoice_no" name="invoice_no" required>
-        </div>
-        <div class="form-row">
-            <label>Tanggal:</label>
-            <input type="date" id="tanggal" name="tanggal" required>
-        </div>
-        <div class="form-row">
-            <label>Status:</label>
-            <select name="status">
-                <option value="DICAIRKAN">DICAIRKAN</option>
-                <option value="PROSES">PROSES</option>
-                <option value="DITOLAK">DITOLAK</option>
-            </select>
-        </div>
-
-        <hr>
-
-        <!-- Data BPKB Jaminan -->
-        <div class="sub-header">🚗 DATA JAMINAN BPKB</div>
-        <div class="form-row">
-            <label>Merk / Tipe:</label>
-            <input type="text" name="bpkb_merk" placeholder="Contoh: TOYOTA AVANZA VELOZ" required>
-        </div>
-        <div class="form-row">
-            <label>Tahun:</label>
-            <input type="text" name="bpkb_tahun" placeholder="2021">
-        </div>
-        <div class="form-row">
-            <label>No. Polisi:</label>
-            <input type="text" name="bpkb_polisi" placeholder="B 1234 XYZ">
-        </div>
-        <div class="form-row">
-            <label>Warna:</label>
-            <input type="text" name="bpkb_warna" placeholder="HITAM METALIK">
-        </div>
-        <div class="form-row">
-            <label>No. BPKB:</label>
-            <input type="text" name="bpkb_no" placeholder="M-XXXXXXXXX">
-        </div>
-        <div class="form-row">
-            <label>No. Rangka:</label>
-            <input type="text" name="bpkb_rangka" placeholder="MHXXXXXXXXXXXXXX">
-        </div>
-
-        <hr>
-
-        <!-- Rincian Dana -->
-        <div class="sub-header">💰 RINCIAN DANA (DISBURSEMENT)</div>
-        <div class="form-row">
-            <label>Plafond Pinjaman Pokok:</label>
-            <input type="number" name="plafond" step="1000" value="50000000" required>
-        </div>
-        <div class="form-row">
-            <label>Biaya Administrasi & Notaris:</label>
-            <input type="number" name="biaya_adm" step="1000" value="1500000">
-        </div>
-        <div class="form-row">
-            <label>Premi Asuransi Kendaraan:</label>
-            <input type="number" name="biaya_asuransi" step="1000" value="500000">
-        </div>
-        <div class="form-row">
-            <label>Biaya Provisi:</label>
-            <input type="number" name="biaya_provisi" step="1000" value="1000000">
-        </div>
-
-        <hr>
-
-        <!-- Kewajiban Pembayaran -->
-        <div class="sub-header">📅 KEWAJIBAN PEMBAYARAN</div>
-        <div class="form-row">
-            <label>Angsuran Per Bulan (Rp):</label>
-            <input type="number" name="angsuran" step="1000" value="1850000" required>
-        </div>
-        <div class="form-row">
-            <label>Tenor (Bulan):</label>
-            <input type="number" name="tenor" value="36" required>
-        </div>
-        <div class="form-row">
-            <label>Jatuh Tempo (Tanggal tiap bulan):</label>
-            <input type="number" name="jatuh_tempo_tanggal" value="29" min="1" max="31">
-        </div>
-        <div class="form-row">
-            <label>Mulai Cicilan (Bulan/Tahun):</label>
-            <input type="month" id="mulai_cicilan" name="mulai_cicilan">
-        </div>
-
-        <hr>
-
-        <!-- Tanda Tangan -->
-        <div class="form-row">
-            <label>Nama Petugas Keuangan:</label>
-            <input type="text" name="petugas" placeholder="Nama petugas">
-        </div>
-
-        <button type="submit">📄 GENERATE INVOICE</button>
-    </form>
+    </div>
 </div>
+
+<!-- Modal Preview Invoice -->
+<div id="invoiceModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div id="modalInvoiceContent"></div>
+        <div style="text-align:center; margin-top:20px;" class="no-print">
+            <button onclick="printModal()">🖨️ CETAK</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== DATA STORAGE ====================
+    let invoices = [];
+
+    // Load data dari localStorage
+    function loadData() {
+        const stored = localStorage.getItem('invoices_pembiayaan');
+        if (stored) {
+            invoices = JSON.parse(stored);
+        } else {
+            // Data contoh
+            invoices = [];
+        }
+        renderInvoiceList();
+    }
+
+    // Simpan ke localStorage
+    function saveData() {
+        localStorage.setItem('invoices_pembiayaan', JSON.stringify(invoices));
+        renderInvoiceList();
+    }
+
+    // Generate ID unik
+    function generateId() {
+        return Date.now().toString() + Math.random().toString(36).substr(2, 5);
+    }
+
+    // Set default values (tanggal, no invoice, mulai cicilan)
+    function setDefaultValues() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        
+        if (!document.getElementById('tanggal').value) {
+            document.getElementById('tanggal').value = `${year}-${month}-${day}`;
+        }
+        if (!document.getElementById('mulai_cicilan').value) {
+            document.getElementById('mulai_cicilan').value = `${year}-${month}`;
+        }
+        if (!document.getElementById('invoice_no').value) {
+            document.getElementById('invoice_no').value = `INV/BPKB/${year}/${month}/${day}`;
+        }
+    }
+
+    // Ambil data dari form
+    function getFormData() {
+        const plafond = parseFloat(document.getElementById('plafond').value) || 0;
+        const biaya_adm = parseFloat(document.getElementById('biaya_adm').value) || 0;
+        const biaya_asuransi = parseFloat(document.getElementById('biaya_asuransi').value) || 0;
+        const biaya_provisi = parseFloat(document.getElementById('biaya_provisi').value) || 0;
+        const total_bersih = plafond - biaya_adm - biaya_asuransi - biaya_provisi;
+
+        return {
+            id: document.getElementById('editId').value || '',
+            koperasi_nama: document.getElementById('koperasi_nama').value,
+            koperasi_alamat: document.getElementById('koperasi_alamat').value,
+            koperasi_kontak: document.getElementById('koperasi_kontak').value,
+            debitur_nama: document.getElementById('debitur_nama').value,
+            debitur_nik: document.getElementById('debitur_nik').value,
+            debitur_alamat: document.getElementById('debitur_alamat').value,
+            invoice_no: document.getElementById('invoice_no').value,
+            tanggal: document.getElementById('tanggal').value,
+            status: document.getElementById('status').value,
+            bpkb_merk: document.getElementById('bpkb_merk').value,
+            bpkb_tahun: document.getElementById('bpkb_tahun').value,
+            bpkb_polisi: document.getElementById('bpkb_polisi').value,
+            bpkb_warna: document.getElementById('bpkb_warna').value,
+            bpkb_no: document.getElementById('bpkb_no').value,
+            bpkb_rangka: document.getElementById('bpkb_rangka').value,
+            plafond: plafond,
+            biaya_adm: biaya_adm,
+            biaya_asuransi: biaya_asuransi,
+            biaya_provisi: biaya_provisi,
+            total_bersih: total_bersih,
+            angsuran: parseFloat(document.getElementById('angsuran').value) || 0,
+            tenor: parseInt(document.getElementById('tenor').value) || 0,
+            jatuh_tempo_tanggal: parseInt(document.getElementById('jatuh_tempo_tanggal').value) || 29,
+            mulai_cicilan: document.getElementById('mulai_cicilan').value,
+            petugas: document.getElementById('petugas').value,
+            created_at: new Date().toISOString()
+        };
+    }
+
+    // Isi form dengan data untuk edit
+    function fillFormData(data) {
+        document.getElementById('editId').value = data.id;
+        document.getElementById('koperasi_nama').value = data.koperasi_nama;
+        document.getElementById('koperasi_alamat').value = data.koperasi_alamat;
+        document.getElementById('koperasi_kontak').value = data.koperasi_kontak;
+        document.getElementById('debitur_nama').value = data.debitur_nama;
+        document.getElementById('debitur_nik').value = data.debitur_nik;
+        document.getElementById('debitur_alamat').value = data.debitur_alamat;
+        document.getElementById('invoice_no').value = data.invoice_no;
+        document.getElementById('tanggal').value = data.tanggal;
+        document.getElementById('status').value = data.status;
+        document.getElementById('bpkb_merk').value = data.bpkb_merk;
+        document.getElementById('bpkb_tahun').value = data.bpkb_tahun;
+        document.getElementById('bpkb_polisi').value = data.bpkb_polisi;
+        document.getElementById('bpkb_warna').value = data.bpkb_warna;
+        document.getElementById('bpkb_no').value = data.bpkb_no;
+        document.getElementById('bpkb_rangka').value = data.bpkb_rangka;
+        document.getElementById('plafond').value = data.plafond;
+        document.getElementById('biaya_adm').value = data.biaya_adm;
+        document.getElementById('biaya_asuransi').value = data.biaya_asuransi;
+        document.getElementById('biaya_provisi').value = data.biaya_provisi;
+        document.getElementById('angsuran').value = data.angsuran;
+        document.getElementById('tenor').value = data.tenor;
+        document.getElementById('jatuh_tempo_tanggal').value = data.jatuh_tempo_tanggal;
+        document.getElementById('mulai_cicilan').value = data.mulai_cicilan;
+        document.getElementById('petugas').value = data.petugas;
+        
+        document.getElementById('formTitle').innerHTML = '✏️ EDIT INVOICE PEMBIAYAAN';
+        document.getElementById('cancelBtn').style.display = 'inline-block';
+    }
+
+    // Reset form
+    function resetForm() {
+        document.getElementById('editId').value = '';
+        document.getElementById('debitur_nama').value = '';
+        document.getElementById('debitur_nik').value = '';
+        document.getElementById('debitur_alamat').value = '';
+        document.getElementById('bpkb_merk').value = '';
+        document.getElementById('bpkb_tahun').value = '';
+        document.getElementById('bpkb_polisi').value = '';
+        document.getElementById('bpkb_warna').value = '';
+        document.getElementById('bpkb_no').value = '';
+        document.getElementById('bpkb_rangka').value = '';
+        document.getElementById('petugas').value = '';
+        
+        setDefaultValues();
+        
+        document.getElementById('formTitle').innerHTML = '📋 FORM INVOICE PEMBIAYAAN';
+        document.getElementById('cancelBtn').style.display = 'none';
+    }
+
+    // Simpan invoice (create/update)
+    function saveInvoice() {
+        const formData = getFormData();
+        
+        if (!formData.debitur_nama) {
+            alert('Nama debitur wajib diisi!');
+            return;
+        }
+        if (!formData.invoice_no) {
+            alert('No. Invoice wajib diisi!');
+            return;
+        }
+        
+        if (formData.id) {
+            // Update existing
+            const index = invoices.findIndex(i => i.id === formData.id);
+            if (index !== -1) {
+                invoices[index] = formData;
+                showAlert('Invoice berhasil diupdate!', 'success');
+            }
+        } else {
+            // Create new
+            formData.id = generateId();
+            invoices.unshift(formData);
+            showAlert('Invoice berhasil disimpan!', 'success');
+        }
+        
+        saveData();
+        resetForm();
+    }
+
+    // Hapus invoice
+    function deleteInvoice(id) {
+        if (confirm('Yakin ingin menghapus invoice ini?')) {
+            invoices = invoices.filter(i => i.id !== id);
+            saveData();
+            showAlert('Invoice berhasil dihapus!', 'success');
+        }
+    }
+
+    // Tampilkan invoice di modal
+    function viewInvoice(id) {
+        const invoice = invoices.find(i => i.id === id);
+        if (invoice) {
+            const html = renderInvoiceHTML(invoice);
+            document.getElementById('modalInvoiceContent').innerHTML = html;
+            document.getElementById('invoiceModal').style.display = 'block';
+        }
+    }
+
+    // Cetak invoice (print)
+    function printInvoice(id) {
+        const invoice = invoices.find(i => i.id === id);
+        if (invoice) {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Cetak Invoice - ${invoice.invoice_no}</title>
+                    <style>
+                        body { font-family: 'Times New Roman', monospace; padding: 20px; }
+                        .invoice { max-width: 1000px; margin: auto; border: 1px solid #000; padding: 20px 30px; }
+                        .header-title { text-align: center; font-size: 28px; font-weight: bold; border-bottom: 3px solid #000; padding-bottom: 8px; margin-bottom: 15px; }
+                        .koperasi-info { text-align: center; margin-bottom: 20px; font-size: 12px; border-bottom: 1px dashed #999; padding-bottom: 10px; }
+                        .debitur-box { background: #f9f9f9; padding: 10px; border: 1px solid #ccc; margin: 15px 0; font-size: 13px; }
+                        .info-invoice { display: flex; justify-content: space-between; margin: 15px 0; font-size: 13px; }
+                        table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px; }
+                        th, td { border: 1px solid #000; padding: 8px; vertical-align: top; }
+                        th { background: #f0f0f0; }
+                        .total-box { text-align: right; font-size: 16px; font-weight: bold; margin: 15px 0; padding: 10px; border-top: 2px solid #000; border-bottom: 2px solid #000; }
+                        .signature { margin-top: 30px; display: flex; justify-content: space-between; text-align: center; font-size: 12px; }
+                        .sign-line { width: 200px; margin-top: 40px; border-top: 1px solid #000; padding-top: 5px; }
+                        .footer-note { margin-top: 25px; font-size: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
+                    </style>
+                </head>
+                <body>
+                    ${renderInvoiceHTML(invoice)}
+                    <script>window.onload = function() { window.print(); setTimeout(() => window.close(), 500); };<\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+    }
+
+    // Render HTML invoice dari data
+    function renderInvoiceHTML(data) {
+        const tanggalFormatted = new Date(data.tanggal).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+        const mulaiFormatted = data.mulai_cicilan ? new Date(data.mulai_cicilan + '-01').toLocaleDateString('id-ID', { year: 'numeric', month: 'long' }) : '-';
+        
+        return `
+            <div class="invoice">
+                <div class="header-title">INVOICE PEMBIAYAAN</div>
+                <div class="koperasi-info">
+                    <strong>${escapeHtml(data.koperasi_nama || '-')}</strong><br>
+                    ${escapeHtml(data.koperasi_alamat || '-')}<br>
+                    ${escapeHtml(data.koperasi_kontak || '-')}
+                </div>
+                <div class="debitur-box">
+                    <strong>DEBITUR / PENERIMA DANA:</strong><br>
+                    ${escapeHtml(data.debitur_nama || '-')}<br>
+                    NIK: ${escapeHtml(data.debitur_nik || '-')}<br>
+                    ${escapeHtml(data.debitur_alamat || '-')}
+                </div>
+                <div class="info-invoice">
+                    <div><strong>No. Invoice:</strong> ${escapeHtml(data.invoice_no)}</div>
+                    <div><strong>Tanggal:</strong> ${tanggalFormatted}</div>
+                    <div><strong>Status:</strong> <span style="color:green; font-weight:bold;">${data.status}</span></div>
+                </div>
+                <table>
+                    <tr><th colspan="2">INFORMASI JAMINAN BPKB</th></tr>
+                    <tr><td style="width:50%"><strong>Merk / Tipe</strong><br>${escapeHtml(data.bpkb_merk || '-')}</td><td><strong>Tahun</strong><br>${escapeHtml(data.bpkb_tahun || '-')}</td></tr>
+                    <tr><td><strong>No. Polisi</strong><br>${escapeHtml(data.bpkb_polisi || '-')}</td><td><strong>Warna</strong><br>${escapeHtml(data.bpkb_warna || '-')}</td></tr>
+                    <tr><td><strong>No. BPKB</strong><br>${escapeHtml(data.bpkb_no || '-')}</td><td><strong>No. Rangka</strong><br>${escapeHtml(data.bpkb_rangka || '-')}</td></tr>
+                </table>
+                <table>
+                    <tr><th colspan="2">RINCIAN DANA (DISBURSEMENT)</th></tr>
+                    <tr><td>Plafond Pinjaman Pokok</td><td align="right">Rp ${formatRupiah(data.plafond)}</td></tr>
+                    <tr><td style="color:red">Biaya Administrasi & Notaris</td><td align="right" style="color:red">(Rp ${formatRupiah(data.biaya_adm)})</td></tr>
+                    <tr><td style="color:red">Premi Asuransi Kendaraan</td><td align="right" style="color:red">(Rp ${formatRupiah(data.biaya_asuransi)})</td></tr>
+                    <tr><td style="color:red">Biaya Provisi</td><td align="right" style="color:red">(Rp ${formatRupiah(data.biaya_provisi)})</td></tr>
+                </table>
+                <div class="total-box">
+                    TOTAL PENCAIRAN BERSIH (NET)<br>
+                    Rp ${formatRupiah(data.total_bersih)}
+                </div>
+                <table>
+                    <tr><th colspan="2">KEWAJIBAN PEMBAYARAN</th></tr>
+                    <tr><td>Angsuran Per Bulan</td><td align="right">Rp ${formatRupiah(data.angsuran)}</td></tr>
+                    <tr><td>Jatuh Tempo</td><td>Tanggal ${data.jatuh_tempo_tanggal} Setiap Bulan</td></tr>
+                    <tr><td>Tenor</td><td>${data.tenor} Bulan</td></tr>
+                    <tr><td>Mulai Cicilan</td><td>${mulaiFormatted}</td></tr>
+                </table>
+                <div class="signature">
+                    <div>Petugas Keuangan,<br><br><br><div class="sign-line">(${escapeHtml(data.petugas || '_________________')})</div></div>
+                    <div>Penerima Dana / Debitur,<br><br><br><div class="sign-line">(${escapeHtml(data.debitur_nama || '_________________')})</div></div>
+                </div>
+                <div class="footer-note">
+                    <strong>Catatan:</strong><br>
+                    1. BPKB asli disimpan oleh Kreditur sebagai jaminan hutang hingga pelunasan dilakukan.<br>
+                    2. Ketentuan pembayaran akan dikenakan denda sesuai dengan ketentuan akad kredit.<br>
+                    3. Invoice ini merupakan bukti pencairan dana dan pengikatan aset.
+                </div>
+            </div>
+        `;
+    }
+
+    // Render daftar invoice di tabel
+    function renderInvoiceList() {
+        const container = document.getElementById('invoiceList');
+        document.getElementById('totalInvoice').innerHTML = `Total: ${invoices.length} invoice`;
+        
+        if (invoices.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">Belum ada invoice. Silakan buat invoice baru di form sebelah kiri.</p>';
+            return;
+        }
+        
+        let html = `<table>
+            <thead>
+                <tr>
+                    <th>No. Invoice</th>
+                    <th>Tanggal</th>
+                    <th>Debitur</th>
+                    <th>Plafond</th>
+                    <th>Total Bersih</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        invoices.forEach(inv => {
+            const tanggalFormatted = new Date(inv.tanggal).toLocaleDateString('id-ID');
+            html += `
+                <tr>
+                    <td>${escapeHtml(inv.invoice_no)}</td>
+                    <td>${tanggalFormatted}</td>
+                    <td>${escapeHtml(inv.debitur_nama)}</td>
+                    <td>Rp ${formatRupiah(inv.plafond)}</td>
+                    <td>Rp ${formatRupiah(inv.total_bersih)}</td>
+                    <td><span class="status status-${inv.status.toLowerCase()}">${inv.status}</span></td>
+                    <td>
+                        <button class="btn-table view" onclick="viewInvoice('${inv.id}')">👁️ Lihat</button>
+                        <button class="btn-table edit" onclick="editInvoice('${inv.id}')">✏️ Edit</button>
+                        <button class="btn-table delete" onclick="deleteInvoice('${inv.id}')">🗑️ Hapus</button>
+                        <button class="btn-table print" onclick="printInvoice('${inv.id}')">🖨️ Cetak</button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    }
+
+    // Edit invoice
+    function editInvoice(id) {
+        const invoice = invoices.find(i => i.id === id);
+        if (invoice) {
+            fillFormData(invoice);
+        }
+    }
+
+    // Helper functions
+    function formatRupiah(number) {
+        return new Intl.NumberFormat('id-ID').format(Math.abs(number));
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        container.innerHTML = `<div class="alert alert-success">✅ ${message}</div>`;
+        setTimeout(() => {
+            container.innerHTML = '';
+        }, 3000);
+    }
+    
+    function printModal() {
+        const content = document.getElementById('modalInvoiceContent').innerHTML;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Cetak Invoice</title>
+                <style>
+                    body { font-family: 'Times New Roman', monospace; padding: 20px; }
+                    .invoice { max-width: 1000px; margin: auto; border: 1px solid #000; padding: 20px 30px; }
+                    .header-title { text-align: center; font-size: 28px; font-weight: bold; border-bottom: 3px solid #000; padding-bottom: 8px; margin-bottom: 15px; }
+                    .koperasi-info { text-align: center; margin-bottom: 20px; font-size: 12px; border-bottom: 1px dashed #999; padding-bottom: 10px; }
+                    .debitur-box { background: #f9f9f9; padding: 10px; border: 1px solid #ccc; margin: 15px 0; font-size: 13px; }
+                    .info-invoice { display: flex; justify-content: space-between; margin: 15px 0; font-size: 13px; }
+                    table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 13px; }
+                    th, td { border: 1px solid #000; padding: 8px; vertical-align: top; }
+                    th { background: #f0f0f0; }
+                    .total-box { text-align: right; font-size: 16px; font-weight: bold; margin: 15px 0; padding: 10px; border-top: 2px solid #000; border-bottom: 2px solid #000; }
+                    .signature { margin-top: 30px; display: flex; justify-content: space-between; text-align: center; font-size: 12px; }
+                    .sign-line { width: 200px; margin-top: 40px; border-top: 1px solid #000; padding-top: 5px; }
+                    .footer-note { margin-top: 25px; font-size: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
+                </style>
+            </head>
+            <body>
+                ${content}
+                <script>window.onload = function() { window.print(); setTimeout(() => window.close(), 500); };<\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+
+    // Event Listeners
+    document.getElementById('saveBtn').addEventListener('click', saveInvoice);
+    document.getElementById('cancelBtn').addEventListener('click', resetForm);
+    
+    // Modal close
+    const modal = document.getElementById('invoiceModal');
+    document.querySelector('.close-modal').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+    });
+
+    // Inisialisasi
+    setDefaultValues();
+    loadData();
+</script>
 </body>
 </html>
