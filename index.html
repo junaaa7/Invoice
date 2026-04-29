@@ -18,6 +18,28 @@
         button:hover { background: #219a52; }
         .note { font-size: 12px; color: #7f8c8d; margin-top: 5px; }
     </style>
+    <script>
+        // Fungsi untuk mengisi tanggal dan no invoice otomatis dengan JavaScript
+        function setDefaultValues() {
+            // Set tanggal hari ini
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const todayDate = `${year}-${month}-${day}`;
+            document.getElementById('tanggal').value = todayDate;
+            
+            // Set bulan untuk mulai cicilan (YYYY-MM)
+            const thisMonth = `${year}-${month}`;
+            document.getElementById('mulai_cicilan').value = thisMonth;
+            
+            // Set no invoice otomatis
+            document.getElementById('invoice_no').value = `INV/BPKB/${year}/${month}/${day}`;
+        }
+        
+        // Jalankan saat halaman selesai loading
+        window.onload = setDefaultValues;
+    </script>
 </head>
 <body>
 <div class="container">
@@ -61,11 +83,11 @@
         <!-- Info Invoice -->
         <div class="form-row">
             <label>No. Invoice:</label>
-            <input type="text" name="invoice_no" value="INV/BPKB/<?= date('Y/m/d') ?>" required>
+            <input type="text" id="invoice_no" name="invoice_no" required>
         </div>
         <div class="form-row">
             <label>Tanggal:</label>
-            <input type="date" name="tanggal" value="<?= date('Y-m-d') ?>" required>
+            <input type="date" id="tanggal" name="tanggal" required>
         </div>
         <div class="form-row">
             <label>Status:</label>
@@ -144,7 +166,7 @@
         </div>
         <div class="form-row">
             <label>Mulai Cicilan (Bulan/Tahun):</label>
-            <input type="month" name="mulai_cicilan" value="<?= date('Y-m') ?>">
+            <input type="month" id="mulai_cicilan" name="mulai_cicilan">
         </div>
 
         <hr>
