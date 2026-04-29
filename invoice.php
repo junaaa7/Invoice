@@ -164,9 +164,9 @@
     <table>
         <tr><th colspan="2">RINCIAN DANA (DISBURSEMENT)</th></tr>
         <tr><td>Plafond Pinjaman Pokok</td><td style="text-align:right">Rp <?= number_format($plafond, 0, ',', '.') ?></td></tr>
-        <tr><td>Biaya Administrasi & Notaris</td><td style="text-align:right">(Rp <?= number_format($adm, 0, ',', '.') ?>)</td></tr>
-        <tr><td>Premi Asuransi Kendaraan</td><td style="text-align:right">(Rp <?= number_format($asuransi, 0, ',', '.') ?>)</td></tr>
-        <tr><td>Biaya Provisi</td><td style="text-align:right">(Rp <?= number_format($provisi, 0, ',', '.') ?>)</td></tr>
+        <tr><td style="color:red">Biaya Administrasi & Notaris</td><td style="text-align:right; color:red">(Rp <?= number_format($adm, 0, ',', '.') ?>)</td></tr>
+        <tr><td style="color:red">Premi Asuransi Kendaraan</td><td style="text-align:right; color:red">(Rp <?= number_format($asuransi, 0, ',', '.') ?>)</td></tr>
+        <tr><td style="color:red">Biaya Provisi</td><td style="text-align:right; color:red">(Rp <?= number_format($provisi, 0, ',', '.') ?>)</td></tr>
     </table>
 
     <div class="total-box">
@@ -214,7 +214,7 @@
 
 <div class="print-group no-print">
     <button onclick="window.print()">🖨️ CETAK / PDF</button>
-    <button onclick="window.location.href='index.php'">📝 BUAT INVOICE BARU</button>
+    <button onclick="window.location.href='index.html'">📝 BUAT INVOICE BARU</button>
 </div>
 
 </body>
